@@ -1,4 +1,4 @@
-defmodule Api2 do
+defmodule Api3 do
     def init() do
         init(0)
     end
@@ -14,10 +14,12 @@ defmodule Api2 do
 
     def crear(n) do
         {:ok, ifs} = :inet.getif()
+        #ips = Enum.map(ifs, fn {ip, _broadaddr, _mask} -> ip end)
+        #f = Enum.join(Tuple.to_list(Enum.at(ips,4)),".")
         ips = Enum.at(ifs,0)
         ip = elem(ips,0)
         f = Enum.join(Tuple.to_list(ip),".")
-        node = Enum.join([n,"B","@",f],"")
+        node = Enum.join([n,"AB","@",f],"")
         #IO.inspect node
         res = Node.ping(String.to_atom(node))
         cond do
@@ -43,8 +45,10 @@ defmodule Api2 do
         ips = Enum.at(ifs,0)
         ip = elem(ips,0)
         f = Enum.join(Tuple.to_list(ip),".")
-        node = Enum.join([n,"B","@",f],"")
+        node = Enum.join([n,"A","@",f],"")
         Node.connect String.to_atom(node)
+        node2 = Enum.join([n,"B","@",f],"")
+        Node.connect String.to_atom(node2)
         init2(n+1)
     end
 
@@ -52,10 +56,19 @@ defmodule Api2 do
         :timer.sleep(1000)
         cond do
             #Node.list != [] -> Enum.map(Node.list, fn (x) -> Process.send_after(x,["f1","f2"],1) end)
-            Node.list != [] -> Enum.map(Node.list, fn (x) -> Node.spawn_link(x,Api2.take([Node.self(),"f3","f4"])) end)
+            Node.list != [] -> Enum.map(Node.list, fn (x) -> node_filter(x) end)
             true -> nil
         end
         init2(0)
+    end
+#Enum.map(Node.list, fn (x) -> Node.spawn_link(x,Api3.take([Node.self(),"f1","f2"])) end)
+    def node_filter(x) do
+        xs =Atom.to_string(x)
+        cond do
+            String.contains?(xs, "A") -> Node.spawn_link(x,Api3.take([Node.self(),"f1","f2"])) 
+            String.contains?(xs, "B") -> Node.spawn_link(x,Api3.take([Node.self(),"f3","f4"])) 
+            true -> nil
+        end
     end
 """
     def main do
@@ -67,11 +80,11 @@ defmodule Api2 do
     end
 """
     def take([h | t]) do
-        Node.spawn_link(h,Api2.proc_list(t))
+        Node.spawn_link(h,Api3.proc_list(t))
     end
 
     def proc_list([h | t]) do
-        apply(String.to_existing_atom("Elixir.Api2"), String.to_atom(h), [])
+        apply(String.to_existing_atom("Elixir.Api3"), String.to_atom(h), [])
         proc_list(t)
     end
 
@@ -79,11 +92,19 @@ defmodule Api2 do
         envio()
     end
 
+    def f1() do
+        IO.inspect "Se ejecuta f1 en api3"
+    end
+
+    def f2() do
+        IO.inspect "Se ejecuta f2 en api3"
+    end
+
     def f3() do
-        IO.inspect "Se ejecuta f3"
+        IO.inspect "Se ejecuta f3 en api3"
     end
 
     def f4() do
-        IO.inspect "Se ejecuta f4"
+        IO.inspect "Se ejecuta f4 en api3"
     end
 end

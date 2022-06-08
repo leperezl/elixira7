@@ -14,8 +14,11 @@ defmodule Api1 do
 
     def crear(n) do
         {:ok, ifs} = :inet.getif()
-        ips = Enum.map(ifs, fn {ip, _broadaddr, _mask} -> ip end)
-        f = Enum.join(Tuple.to_list(Enum.at(ips,4)),".")
+        #ips = Enum.map(ifs, fn {ip, _broadaddr, _mask} -> ip end)
+        #f = Enum.join(Tuple.to_list(Enum.at(ips,4)),".")
+        ips = Enum.at(ifs,0)
+        ip = elem(ips,0)
+        f = Enum.join(Tuple.to_list(ip),".")
         node = Enum.join([n,"A","@",f],"")
         #IO.inspect node
         res = Node.ping(String.to_atom(node))
@@ -39,8 +42,9 @@ defmodule Api1 do
 
     def conectar(n) do
         {:ok, ifs} = :inet.getif()
-        ips = Enum.map(ifs, fn {ip, _broadaddr, _mask} -> ip end)
-        f = Enum.join(Tuple.to_list(Enum.at(ips,4)),".")
+        ips = Enum.at(ifs,0)
+        ip = elem(ips,0)
+        f = Enum.join(Tuple.to_list(ip),".")
         node = Enum.join([n,"A","@",f],"")
         Node.connect String.to_atom(node)
         init2(n+1)
