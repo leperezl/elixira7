@@ -49,6 +49,8 @@ defmodule Api3 do
         Node.connect String.to_atom(node)
         node2 = Enum.join([n,"B","@",f],"")
         Node.connect String.to_atom(node2)
+        node3 = Enum.join([n,"AB","@",f],"")
+        Node.connect String.to_atom(node3)
         init2(n+1)
     end
 
@@ -64,13 +66,28 @@ defmodule Api3 do
 #Enum.map(Node.list, fn (x) -> Node.spawn_link(x,Api3.take([Node.self(),"f1","f2"])) end)
     def node_filter(x) do
         xs =Atom.to_string(x)
-        cond do
-            String.contains?(xs, "A") -> Node.spawn_link(x,Api3.take([Node.self(),"f1","f2"])) 
-            String.contains?(xs, "B") -> Node.spawn_link(x,Api3.take([Node.self(),"f3","f4"])) 
-            true -> nil
+        if String.contains?(xs, "AB") do
+            Node.spawn_link(x,Api3.take([Node.self(),"f1","f2","f3","f4"])) 
+        end
+        if String.contains?(xs, "A") do
+            Node.spawn_link(x,Api3.take([Node.self(),"f1","f2"])) 
+        end
+        if String.contains?(xs, "B") do
+            Node.spawn_link(x,Api3.take([Node.self(),"f3","f4"])) 
         end
     end
 """
+def node_filter(x) do
+    xs =Atom.to_string(x)
+    cond do
+        String.contains?(xs, "AB") -> Node.spawn_link(x,Api3.take([Node.self(),"f1","f2","f3","f4"])) 
+        String.contains?(xs, "A") -> Node.spawn_link(x,Api3.take([Node.self(),"f1","f2"])) 
+        String.contains?(xs, "B") -> Node.spawn_link(x,Api3.take([Node.self(),"f3","f4"])) 
+        true -> nil
+    end
+end
+
+
     def main do
         receive do
             [h | t] -> proc_list([h | t])
